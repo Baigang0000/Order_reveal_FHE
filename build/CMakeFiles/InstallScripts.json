@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/ericbrigham/tfhe/build/cmake_install.cmake",
+		"/Users/ericbrigham/tfhe/build/libtfhe/cmake_install.cmake",
+		"/Users/ericbrigham/tfhe/build/libtfhe/fft_processors/cmake_install.cmake",
+		"/Users/ericbrigham/tfhe/build/libtfhe/fft_processors/nayuki/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -45,13 +45,13 @@ public:
 
     virtual void setProperty_double(const std::string &name, double value) {
         char buf[64];
-        sprintf(buf, "%.8lf", value);
+        snprintf(buf, sizeof(buf), "%.8lf", value);
         setProperty(name, buf);
     }
 
     virtual void setProperty_int64_t(const std::string &name, int64_t value) {
         char buf[64];
-        sprintf(buf, "%10" PRId64, value);
+        snprintf(buf, sizeof(buf), "%10" PRId64, value);
         setProperty(name, buf);
     }
 
