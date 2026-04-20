@@ -10,6 +10,8 @@ MAX_JOBS="${MAX_JOBS:-2}"
 VALIDATE_DERIVED="${VALIDATE_DERIVED:-1}"
 BUILD_DIR="${BUILD_DIR:-build-semantic-real-portable}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
+CMAKE_BIN="${CMAKE_BIN:-cmake}"
+CARGO_BIN="${CARGO_BIN:-cargo}"
 DRY_RUN=0
 
 THRESHOLD_TARGET="orhe_bench_threshold-nayuki-portable"
@@ -73,6 +75,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_ROOT="$REPO_ROOT/$BUILD_DIR"
 BUILD_LIB_DIR="$BUILD_ROOT/libtfhe"
 AGGREGATE_SCRIPT="$SCRIPT_DIR/aggregate_paper_sweep.py"
+RUST_BACKEND_DIR="$REPO_ROOT/rust/orhe-proof-backend"
+RUST_BACKEND_LIB="$RUST_BACKEND_DIR/target/release/liborhe_proof_backend.a"
 THRESHOLD_EXE_BASE="$BUILD_ROOT/$THRESHOLD_TARGET"
 DERIVED_EXE_BASE="$BUILD_ROOT/$DERIVED_TARGET"
 
@@ -88,6 +92,89 @@ resolve_executable() {
     fi
     echo "Could not find executable for $base" >&2
     exit 1
+}
+
+read_cmake_cache_value() {
+    local cache_path="$1"
+    local key="$2"
+    local line
+
+    line="$(grep -E "^${key}:" "$cache_path" | head -n 1 || true)"
+    if [[ -z "$line" ]]; then
+        return 1
+    fi
+    printf '%s\n' "${line#*=}"
+}
+
+is_windows_generator() {
+    local generator="$1"
+    case "$generator" in
+        "MinGW Makefiles"|"NMake Makefiles"|"Visual Studio "*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+ensure_configured_build_dir() {
+    local cache_path="$BUILD_ROOT/CMakeCache.txt"
+    local expected_source="$REPO_ROOT/src"
+    local current_os generator cache_dir home_dir
+
+    current_os="$(uname -s)"
+
+    if [[ -f "$cache_path" ]]; then
+        generator="$(read_cmake_cache_value "$cache_path" "CMAKE_GENERATOR:INTERNAL" || true)"
+        cache_dir="$(read_cmake_cache_value "$cache_path" "CMAKE_CACHEFILE_DIR:INTERNAL" || true)"
+        home_dir="$(read_cmake_cache_value "$cache_path" "CMAKE_HOME_DIRECTORY:INTERNAL" || true)"
+
+        if [[ "$home_dir" != "$expected_source" ]] \
+            || [[ "$cache_dir" != "$BUILD_ROOT" ]] \
+            || { [[ "$current_os" != MINGW* && "$current_os" != MSYS* && "$current_os" != CYGWIN* ]] && is_windows_generator "$generator"; }; then
+            echo "Resetting incompatible CMake build directory: $BUILD_ROOT"
+            rm -rf "$BUILD_ROOT"
+        fi
+    fi
+
+    if [[ ! -f "$cache_path" ]]; then
+        echo "Configuring benchmark build directory: $BUILD_ROOT"
+        "$CMAKE_BIN" -S "$expected_source" -B "$BUILD_ROOT" \
+            -DCMAKE_BUILD_TYPE=optim \
+            -DENABLE_FFTW=OFF \
+            -DENABLE_NAYUKI_AVX=OFF \
+            -DENABLE_NAYUKI_PORTABLE=ON \
+            -DENABLE_ORHE_ATTACK_BENCHMARK=ON \
+            -DENABLE_ORHE_BENCHMARK=ON \
+            -DENABLE_ORHE_DERIVED_BENCHMARK=ON \
+            -DENABLE_ORHE_SMOKE=ON \
+            -DENABLE_SPQLIOS_AVX=OFF \
+            -DENABLE_SPQLIOS_FMA=OFF \
+            -DENABLE_TESTS=OFF
+    fi
+}
+
+ensure_rust_backend() {
+    if [[ -f "$RUST_BACKEND_LIB" ]]; then
+        return
+    fi
+
+    if ! command -v "$CARGO_BIN" >/dev/null 2>&1; then
+        echo "Rust proof backend archive was not found at $RUST_BACKEND_LIB and cargo was not found." >&2
+        exit 1
+    fi
+
+    echo "Building Rust proof backend: $RUST_BACKEND_LIB"
+    (
+        cd "$RUST_BACKEND_DIR"
+        CARGO_HOME="$REPO_ROOT/.cargo_orhe" "$CARGO_BIN" build --release
+    )
+
+    if [[ ! -f "$RUST_BACKEND_LIB" ]]; then
+        echo "Rust proof backend build completed, but $RUST_BACKEND_LIB was not created." >&2
+        exit 1
+    fi
 }
 
 quote_command() {
@@ -278,8 +365,10 @@ wait_for_all_jobs() {
 }
 
 if ((DRY_RUN == 0)); then
+    ensure_rust_backend
+    ensure_configured_build_dir
     echo "Building benchmark targets..."
-    cmake --build "$BUILD_ROOT" --target "$THRESHOLD_TARGET" "$DERIVED_TARGET" -j2
+    "$CMAKE_BIN" --build "$BUILD_ROOT" --target "$THRESHOLD_TARGET" "$DERIVED_TARGET" -j2
     THRESHOLD_EXE="$(resolve_executable "$THRESHOLD_EXE_BASE")"
     DERIVED_EXE="$(resolve_executable "$DERIVED_EXE_BASE")"
 fi
