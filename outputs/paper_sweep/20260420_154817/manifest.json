@@ -1,0 +1,33 @@
+{
+    "timestamp":  "20260420_154817",
+    "repo_root":  "C:\\Users\\baiga\\OneDrive\\Desktop\\orhe-benchmarking",
+    "build_dir":  "C:\\Users\\baiga\\OneDrive\\Desktop\\orhe-benchmarking\\build-semantic-real-portable",
+    "threshold_target":  "C:\\Users\\baiga\\OneDrive\\Desktop\\orhe-benchmarking\\build-semantic-real-portable\\orhe_bench_threshold-nayuki-portable.exe",
+    "derived_target":  "C:\\Users\\baiga\\OneDrive\\Desktop\\orhe-benchmarking\\build-semantic-real-portable\\orhe_bench_derived_registration-nayuki-portable.exe",
+    "runs_threshold":  10,
+    "runs_derived":  10,
+    "batch_sizes":  [
+                        8,
+                        16,
+                        32,
+                        64
+                    ],
+    "derived_members":  [
+                            "f1",
+                            "f2",
+                            "f3",
+                            "f4",
+                            "f5",
+                            "f6"
+                        ],
+    "max_jobs":  2,
+    "validate_derived":  true,
+    "multiprocessing_enabled":  true,
+    "parallel_safety":  {
+                            "separate_invocations_independent":  true,
+                            "fixed_shared_output_files":  false,
+                            "shared_proof_backend_process_state":  false,
+                            "validation_requires_serialization":  false,
+                            "note":  "Executables only write to caller-provided output paths. TFHE RNG and proof-backend state are process-local. Bounded parallelism is enabled conservatively to avoid CPU oversubscription."
+                        }
+}

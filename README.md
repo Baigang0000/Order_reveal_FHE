@@ -230,3 +230,11 @@ _(Please contact us to add your work based on TFHE)_
 
 # orhe-benchmarking
 # orhe-benchmarking
+
+## ORHE Compare Notes
+
+- Ciphertexts are currently bit-sliced `ORHECiphertext` values in little-endian bit order.
+- Compare subtraction is the existing wrapped bit-sliced subtractor over those `ORHECiphertext` bits.
+- `SignExt` currently uses one TFHE bootstrap on the sign wire.
+- The final compare-domain key switch is explicit and verifier-recomputed from the claimed sign-wire output.
+- The semantic `SignExt` proof now binds four chained checkpoints: accumulator init, blind rotation, extraction, and the internal KS-to-sign-wire step.

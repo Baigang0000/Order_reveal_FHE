@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\orhe_bench_derived_registration-nayuki-portable.dir/objects.a
+C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\orhe_bench_derived_registration-nayuki-portable.dir/objects.a @CMakeFiles\orhe_bench_derived_registration-nayuki-portable.dir\objects1.rsp
+C:\msys64\ucrt64\bin\g++.exe  -std=gnu++11 -g3 -march=native -O2 -DNDEBUG -funroll-loops -Wall -Werror -Wl,--whole-archive CMakeFiles\orhe_bench_derived_registration-nayuki-portable.dir/objects.a -Wl,--no-whole-archive -o orhe_bench_derived_registration-nayuki-portable.exe -Wl,--out-implib,liborhe_bench_derived_registration-nayuki-portable.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\orhe_bench_derived_registration-nayuki-portable.dir\linkLibs.rsp

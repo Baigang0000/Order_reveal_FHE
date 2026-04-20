@@ -17,7 +17,8 @@ typedef enum {
     ORHE_PROOF_FAMILY_NONE = 0,
     ORHE_PROOF_FAMILY_PBS = 1,
     ORHE_PROOF_FAMILY_SIGNEXT = 2,
-    ORHE_PROOF_FAMILY_KS = 3
+    ORHE_PROOF_FAMILY_KS = 3,
+    ORHE_PROOF_FAMILY_SUB = 4
 } ORHEProofFamily;
 
 typedef struct {
@@ -35,6 +36,7 @@ typedef struct {
 typedef struct {
     int32_t family;
     int32_t bit_width;
+    int32_t backend_mode;
     ORHEBackendHandle* backend;
 } ORHEProofPP;
 
@@ -52,8 +54,80 @@ typedef struct {
 } ORHEParams;
 
 typedef struct {
+    uint8_t* ptr;
+    uint64_t len;
+} ORHEBytes;
+
+typedef struct {
+    uint8_t params_id[32];
+    uint8_t lut_id[32];
+    uint8_t bk_fft_id[32];
+    uint8_t pbs_ks_id[32];
+    uint8_t ctx_root[32];
+} ORHETFHEContextId;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes pbs_input_ser;
+    ORHEBytes accum_init_tlwe_ser;
+    uint8_t ctx_root[32];
+} ORHESignExtB1AccumulatorInitCheckpoint;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes pbs_input_ser;
+    ORHEBytes accum_init_tlwe_ser;
+    ORHEBytes blind_rot_accum_tlwe_ser;
+    uint8_t ctx_root[32];
+} ORHESignExtB2BlindRotateCheckpoint;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes blind_rot_accum_tlwe_ser;
+    ORHEBytes pre_ks_lwe_ser;
+    uint8_t ctx_root[32];
+} ORHESignExtB3ExtractCheckpoint;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes pre_ks_lwe_ser;
+    ORHEBytes c_sgn_ser;
+    uint8_t pbs_ks_id[32];
+    uint8_t ctx_root[32];
+} ORHESignExtB4InternalKsCheckpoint;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes d_ser;
+    ORHEBytes pbs_input_ser;
+    ORHEBytes c_sgn_ser;
+    uint32_t relation_id;
+    ORHETFHEContextId tfhe_ctx_id;
+} ORHESignExtPublicStatement;
+
+typedef struct {
+    uint32_t version;
+    ORHEBytes pbs_input_ser;
+    ORHEBytes pre_ks_lwe_ser;
+    ORHESignExtB1AccumulatorInitCheckpoint b1;
+    ORHESignExtB2BlindRotateCheckpoint b2;
+    ORHESignExtB3ExtractCheckpoint b3;
+    ORHESignExtB4InternalKsCheckpoint b4;
+} ORHESignExtWitness;
+
+typedef enum {
+    ORHE_BACKEND_MODE_REFERENCE = 0,
+    ORHE_BACKEND_MODE_SIGNEXT_PARTIAL_SEMANTIC_B1_B3 = 1,
+    ORHE_BACKEND_MODE_PBS_RELATION_SEMANTIC = 2,
+    ORHE_BACKEND_MODE_SUB_PARTIAL_TRACE = 3
+} ORHEBackendMode;
+
+typedef struct {
     int32_t nbits;
-    LweSample* bits;   // little-endian bit order
+    // Current ORHE values are represented as bit-sliced ciphertext vectors in
+    // little-endian bit order. The compare path operates over this existing
+    // ORHECiphertext layout directly.
+    LweSample* bits;
     const TFheGateBootstrappingParameterSet* tfhe_params;
     const LweParams* lwe_params;
 } ORHECiphertext;
@@ -82,7 +156,9 @@ typedef struct {
     ORHEAuthSecretKey auth_sk;
 
     ORHEProofPP* pbs_pp;
+    ORHEProofPP* reg_pbs_pp;
     ORHEProofPP* signext_pp;
+    ORHEProofPP* sub_pp;
     ORHEProofPP* ks_pp;
 } ORHEKeySet;
 
@@ -97,8 +173,17 @@ typedef enum {
     ORHE_TRACE_OP_MUX = 7,
     ORHE_TRACE_OP_ADD = 8,
     ORHE_TRACE_OP_SUB = 9,
-    ORHE_TRACE_OP_PBS = 10
+    ORHE_TRACE_OP_PBS = 10,
+    ORHE_TRACE_OP_SHR = 11
 } ORHETraceOpKind;
+
+typedef enum {
+    ORHE_PBS_RELATION_NONE = 0,
+    ORHE_PBS_RELATION_T2_MASK_LOW_NIBBLE = 2,
+    ORHE_PBS_RELATION_T3_BITWISE_NOT = 3,
+    ORHE_PBS_RELATION_T4_MASK_LOW_TWO_BITS = 4,
+    ORHE_PBS_RELATION_T5_EXTRACT_MSB_TO_LSB = 5
+} ORHEPBSRelationKind;
 
 typedef struct {
     ORHETraceOpKind kind;
@@ -116,6 +201,10 @@ typedef struct {
 } ORHEPBSCheckpoint;
 
 typedef struct {
+    ORHEProof proof;
+} ORHESubCheckpoint;
+
+typedef struct {
     ORHETraceOp* ops;
     int32_t nops;
     int32_t cap_ops;
@@ -123,6 +212,14 @@ typedef struct {
     ORHEPBSCheckpoint* checkpoints;
     int32_t ncheckpoints;
     int32_t cap_checkpoints;
+
+    ORHESubCheckpoint* sub_checkpoints;
+    int32_t nsub_checkpoints;
+    int32_t cap_sub_checkpoints;
+
+    ORHECiphertext** wire_snapshots;
+    int32_t nwire_snapshots;
+    int32_t cap_wire_snapshots;
 
     int32_t final_wire;
     int32_t bit_width;
@@ -151,7 +248,36 @@ int32_t orhe_auth_verify(
 void orhe_proof_clear(ORHEProof* proof);
 
 ORHEProofPP* orhe_proof_setup(int32_t family, int32_t bit_width);
+ORHEProofPP* orhe_proof_setup_pbs_semantic(int32_t bit_width, int32_t lwe_n);
+ORHEProofPP* orhe_proof_setup_signext_semantic(int32_t bit_width);
+ORHEProofPP* orhe_proof_setup_sub_partial(int32_t bit_width);
 void orhe_proof_pp_delete(ORHEProofPP* pp);
+
+void orhe_bytes_clear(ORHEBytes* bytes);
+void orhe_signext_b4_clear(ORHESignExtB4InternalKsCheckpoint* ckpt);
+void orhe_signext_public_statement_clear(ORHESignExtPublicStatement* stmt);
+void orhe_signext_witness_clear(ORHESignExtWitness* wit);
+
+int32_t orhe_signext_build_tfhe_ctx_id(
+    ORHETFHEContextId* out,
+    const ORHEKeySet* ks
+);
+int32_t orhe_signext_validate_tfhe_ctx_id(
+    const ORHETFHEContextId* expected,
+    const ORHEKeySet* ks
+);
+int32_t orhe_signext_build_public_statement(
+    ORHESignExtPublicStatement* out,
+    const ORHECiphertext* d,
+    const LweSample* c_sgn,
+    const ORHEKeySet* ks
+);
+int32_t orhe_signext_build_witness(
+    ORHESignExtWitness* out,
+    const ORHECiphertext* d,
+    const LweSample* c_sgn,
+    const ORHEKeySet* ks
+);
 
 void orhe_proof_prove_pbs(
     ORHEProof* out,
@@ -164,6 +290,22 @@ int32_t orhe_proof_verify_pbs(
     const ORHECiphertext* x_in,
     const ORHECiphertext* y_out,
     const ORHEProof* proof
+);
+void orhe_proof_prove_pbs_relation(
+    ORHEProof* out,
+    const ORHEProofPP* pp,
+    int32_t relation,
+    const ORHECiphertext* x_in,
+    const ORHECiphertext* y_out,
+    const ORHEKeySet* ks
+);
+int32_t orhe_proof_verify_pbs_relation(
+    const ORHEProofPP* pp,
+    int32_t relation,
+    const ORHECiphertext* x_in,
+    const ORHECiphertext* y_out,
+    const ORHEProof* proof,
+    const ORHEKeySet* ks
 );
 
 void orhe_proof_prove_signext(
@@ -179,6 +321,36 @@ int32_t orhe_proof_verify_signext(
     const LweSample* c_sgn,
     const ORHEProof* proof,
     const TFheGateBootstrappingParameterSet* params
+);
+
+void orhe_proof_prove_signext_semantic(
+    ORHEProof* out,
+    const ORHEProofPP* pp,
+    const ORHESignExtPublicStatement* stmt,
+    const ORHESignExtWitness* wit
+);
+int32_t orhe_proof_verify_signext_semantic(
+    const ORHEProofPP* pp,
+    const ORHESignExtPublicStatement* stmt,
+    const ORHEProof* proof,
+    const ORHEKeySet* ks
+);
+
+void orhe_proof_prove_sub_partial(
+    ORHEProof* out,
+    const ORHEProofPP* pp,
+    const ORHECiphertext* lhs,
+    const ORHECiphertext* rhs,
+    const ORHECiphertext* diff,
+    const ORHEKeySet* ks
+);
+int32_t orhe_proof_verify_sub_partial(
+    const ORHEProofPP* pp,
+    const ORHECiphertext* lhs,
+    const ORHECiphertext* rhs,
+    const ORHECiphertext* diff,
+    const ORHEProof* proof,
+    const ORHEKeySet* ks
 );
 
 void orhe_proof_prove_ks(
@@ -270,11 +442,27 @@ void orhe_add(
     const TFheGateBootstrappingCloudKeySet* bk
 );
 
+// Compare currently uses this existing bit-sliced subtractor over
+// ORHECiphertext inputs; this is not the single-TLWE subtraction refactor.
 void orhe_sub(
     ORHECiphertext* out,
     const ORHECiphertext* a,
     const ORHECiphertext* b,
     const TFheGateBootstrappingCloudKeySet* bk
+);
+
+void orhe_shr(
+    ORHECiphertext* out,
+    const ORHECiphertext* in,
+    int32_t shift,
+    const TFheGateBootstrappingCloudKeySet* bk
+);
+
+int32_t orhe_eval_allowed_pbs_relation(
+    ORHECiphertext* out,
+    const ORHECiphertext* in,
+    int32_t relation,
+    const ORHEKeySet* ks
 );
 
 void orhe_sign_bit(
@@ -304,6 +492,16 @@ int32_t orhe_trace_append_pbs_checkpoint(
     const ORHECiphertext* y_out,
     const ORHEProof* proof
 );
+int32_t orhe_trace_append_sub_checkpoint(
+    ORHECircuitTrace* tr,
+    const ORHEProof* proof
+);
+
+int32_t orhe_trace_record_wire(
+    ORHECircuitTrace* tr,
+    int32_t wire,
+    const ORHECiphertext* value
+);
 
 int32_t orhe_register_derived(
     ORHEHandleTable* H,
@@ -315,15 +513,25 @@ int32_t orhe_register_derived(
     const ORHEKeySet* ks
 );
 
+const char* orhe_register_derived_last_error(void);
+
 // Compare oracle
+// Current secure compare implementation:
+// - bit-sliced ORHECiphertext subtraction (wrapped two's-complement bit-slice)
+// - trace-backed compare proof for the subtraction/sign-bit pipeline:
+//   the prover records the bit-sliced subtraction transcript and proves each
+//   checkpoint gate, including the final sign-bit PBS, without relying on a
+//   verifier-side TFHE rerun of the compare circuit
+// - explicit final compare-domain key switch proven separately via the KS proof path;
+//   gate verification checks that proof bundle and then decrypts u without
+//   recomputing the key switch in TFHE
 int32_t orhe_compare_server_prove(
     uint64_t h1,
     uint64_t h2,
     const ORHEHandleTable* H,
     LweSample* c_sgn_out,
     LweSample* u_out,
-    ORHEProof* pi_sgn_out,
-    ORHEProof* pi_ks_out,
+    ORHEProof* pi_out,
     const ORHEKeySet* ks
 );
 
@@ -333,12 +541,12 @@ int32_t orhe_gate_compare_verified(
     const ORHEHandleTable* H,
     const LweSample* c_sgn,
     const LweSample* u,
-    const ORHEProof* pi_sgn,
-    const ORHEProof* pi_ks,
+    const ORHEProof* pi,
     const ORHEKeySet* ks
 );
 
-// Legacy prototype compare
+// Legacy debug-only compare. The secure evaluation flow must use
+// `orhe_gate_compare_verified`.
 int32_t orhe_gate_compare(
     uint64_t h1,
     uint64_t h2,
@@ -374,8 +582,16 @@ int32_t orhe_compare_server_prove_with_metrics(
     const ORHEHandleTable* H,
     LweSample* c_sgn_out,
     LweSample* u_out,
-    ORHEProof* pi_sgn_out,
-    ORHEProof* pi_ks_out,
+    ORHEProof* pi_out,
+    const ORHEKeySet* ks,
+    ORHEMetrics* m
+);
+
+int32_t orhe_compare_plain_with_metrics(
+    const ORHECiphertext* lhs,
+    const ORHECiphertext* rhs,
+    LweSample* c_sgn_out,
+    LweSample* u_out,
     const ORHEKeySet* ks,
     ORHEMetrics* m
 );
@@ -386,8 +602,7 @@ int32_t orhe_gate_compare_verified_with_metrics(
     const ORHEHandleTable* H,
     const LweSample* c_sgn,
     const LweSample* u,
-    const ORHEProof* pi_sgn,
-    const ORHEProof* pi_ks,
+    const ORHEProof* pi,
     const ORHEKeySet* ks,
     ORHEMetrics* m
 );

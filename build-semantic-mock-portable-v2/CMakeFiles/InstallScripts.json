@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-mock-portable-v2/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-mock-portable-v2/libtfhe/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-mock-portable-v2/libtfhe/fft_processors/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-mock-portable-v2/libtfhe/fft_processors/nayuki/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

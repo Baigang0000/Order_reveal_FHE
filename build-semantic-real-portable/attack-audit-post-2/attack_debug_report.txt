@@ -1,0 +1,20 @@
+ORHE Fail-Fast Debug Report
+bit_width=8
+episode_id=1
+target_plaintext=104
+
+Queried malicious thresholds:
+- submode=fresh_unregistered_threshold threshold=128 accepted=0 rejected=1 acceptance_stage=rejected_missing_registration detail=compare_rejected_before_proof_due_to_missing_threshold_registration
+  registration_attempted=0 registration_succeeded=0 threshold_registered=0 lhs_handle=9388609 rhs_handle=136217984 handle_lookup_succeeded=0
+  statement_construction_called=1 statement_construction_succeeded=0 proof_generation_called=0 proof_present=0 proof_verification_called=0 proof_verification_succeeded=0 final_release_attempted=0 gate_checked_admissibility=0
+- submode=registered_threshold_if_supported threshold=128 accepted=0 rejected=1 acceptance_stage=rejected_pre_release detail=register_derived_rejected:derived_registration_requires_source_handles
+  registration_attempted=1 registration_succeeded=0 threshold_registered=0 lhs_handle=9388609 rhs_handle=136217984 handle_lookup_succeeded=0
+  statement_construction_called=0 statement_construction_succeeded=0 proof_generation_called=0 proof_present=0 proof_verification_called=0 proof_verification_succeeded=0 final_release_attempted=0 gate_checked_admissibility=0
+
+Root cause analysis:
+- Temporary lockdown is active in RegisterDerived.
+- Rule 1: derived registrations with nsrc <= 0 are rejected.
+- Rule 2: external RegisterDerived traces must start from registered source handles.
+- Rule 3: snapshot-backed glue wires are verifier-recomputed and rejected on mismatch.
+- Rule 4: external PBS trace nodes are disabled until a semantic verifier is available.
+- Result: fresh unregistered thresholds fail before compare, and malicious registered-threshold minting now fails during RegisterDerived.

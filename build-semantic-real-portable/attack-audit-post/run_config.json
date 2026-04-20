@@ -1,0 +1,28 @@
+{
+  "mode": "quick",
+  "episodes_per_backend_or_submode": 1,
+  "seed": 1,
+  "bit_widths": [8],
+  "backends": ["unsafe_compare", "orhe_attack"],
+  "orhe_attack_submodes": ["fresh_unregistered_threshold", "registered_threshold_if_supported"],
+  "orhe_fail_fast": true,
+  "unsafe_compare_behavior": "full binary search",
+  "orhe_attack_behavior": "stop on first malicious query outcome",
+  "outputs": {
+    "attack_trace_csv": "attack_trace.csv",
+    "attack_episode_summary_csv": "attack_episode_summary.csv",
+    "attack_aggregate_summary_csv": "attack_aggregate_summary.csv",
+    "run_config_json": "run_config.json",
+    "attack_debug_report_txt": "attack_debug_report.txt"
+  },
+  "episode_outcomes": ["exact_recovery", "unexpected_acceptance", "blocked_by_rejection"],
+  "acceptance_stage_examples": [
+    "accepted_without_registration_check",
+    "accepted_after_registration_only",
+    "accepted_after_proof_verification",
+    "rejected_missing_registration",
+    "rejected_bad_handle",
+    "rejected_bad_proof",
+    "rejected_pre_release"
+  ]
+}

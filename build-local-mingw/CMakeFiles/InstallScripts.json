@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-local-mingw/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-local-mingw/libtfhe/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-local-mingw/libtfhe/fft_processors/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-local-mingw/libtfhe/fft_processors/nayuki/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

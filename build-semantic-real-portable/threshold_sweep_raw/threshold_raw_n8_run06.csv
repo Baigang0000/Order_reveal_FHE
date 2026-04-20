@@ -1,0 +1,3 @@
+label,mode,batch_size,num_comparisons,tfhe_eval_us,prover_us,verifier_us,end_to_end_online_us,compare_tfhe_us,compare_prover_us,compare_verifier_us,accum_init_us,blind_rotate_us,extract_us,key_switch_us,proof_size_bytes,ciphertext_size_bytes,metadata_size_bytes,total_online_comm_bytes,server_state_bytes,gate_state_bytes
+threshold_filter_lt,plain_tfhe,8,8,70856840,0,0,70856911,70856840,0,0,15,1222950,5,18189,0,182304,0,0,0,0
+threshold_filter_lt,orhe,8,8,140700351,71846,24067,140796381,140700351,71846,24067,12,1218813,7,17369,613312,384864,128,653952,182673,2592

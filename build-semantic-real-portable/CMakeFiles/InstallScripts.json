@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-real-portable/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-real-portable/libtfhe/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-real-portable/libtfhe/fft_processors/cmake_install.cmake",
+		"C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/build-semantic-real-portable/libtfhe/fft_processors/nayuki/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

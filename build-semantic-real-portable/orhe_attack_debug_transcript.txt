@@ -1,0 +1,22 @@
+ORHE attack recovery debug transcript
+backend=orhe_attack
+bit_width=8
+episode_id=1
+plaintext_m=104
+outcome=success
+queries=8
+total_latency_us=123568724
+total_bytes=36646792
+recovered_value=104
+
+Each malicious threshold was registered through a derived trace containing a single CONST op with an attacker-supplied ciphertext snapshot.
+
+query_index,threshold,interval_before,interval_after,accepted,rejected,bit,latency_us,bytes,detail
+1,128,[0,255],[0,127],1,0,1,15579023,4578312,malicious_const_query_accepted
+2,64,[0,127],[64,127],1,0,0,15138162,4578312,malicious_const_query_accepted
+3,96,[64,127],[96,127],1,0,0,15473472,4578312,malicious_const_query_accepted
+4,112,[96,127],[96,111],1,0,1,15834808,4578312,malicious_const_query_accepted
+5,104,[96,111],[104,111],1,0,0,15153104,4578312,malicious_const_query_accepted
+6,108,[104,111],[104,107],1,0,1,15370185,4578312,malicious_const_query_accepted
+7,106,[104,107],[104,105],1,0,1,15299613,4578312,malicious_const_query_accepted
+8,105,[104,105],[104,104],1,0,1,15720137,4578312,malicious_const_query_accepted

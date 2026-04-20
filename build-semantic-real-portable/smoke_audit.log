@@ -1,0 +1,63 @@
+RegisterBase(a): PASS
+RegisterBase(b): PASS
+Duplicate handle rejected: PASS
+Bad signature rejected: PASS
+Server compare proof generation: PASS
+Verified compare result for 200 < 150: 0
+Verified compare accepts valid proof: PASS
+Semantic SignExt(B1/B2/B3/B4) path: PASS
+Semantic SignExt wrong accumulator init rejected: PASS
+Semantic SignExt wrong blind rotation state rejected: PASS
+Semantic SignExt wrong extracted value rejected: PASS
+Semantic SignExt wrong internal KS output rejected: PASS
+Semantic SignExt cross-context replay rejected: PASS
+Tampered PBS proof rejected: PASS
+Tampered final KS output rejected: PASS
+RegisterDer valid trace accepted: PASS
+RegisterDer wrong output rejected: PASS
+RegisterDer missing source handle rejected: PASS
+RegisterDer arbitrary PBS output rejected: FAIL
+Server compare proof generation on derived handle: PASS
+Verified compare result for derived value < itself: 0
+Derived handle compare works: PASS
+Register equality lhs: PASS
+Register equality rhs: PASS
+Equality case result: 0
+Equality case: PASS
+Register neg/pos lhs: PASS
+Register neg/pos rhs: PASS
+Negative vs positive inputs result: 1
+Negative vs positive inputs: PASS
+Register near-zero lhs: PASS
+Register near-zero rhs: PASS
+Near-zero case 0 < 1 result: 1
+Near-zero case 0 < 1: PASS
+Register near-zero reverse lhs: PASS
+Register near-zero reverse rhs: PASS
+Near-zero case 1 < 0 result: 0
+Near-zero case 1 < 0: PASS
+Register boundary lhs: PASS
+Register boundary rhs: PASS
+Boundary case 0x7f < 0x80 result: 1
+Boundary case 0x7f < 0x80: PASS
+Register boundary wrap lhs: PASS
+Register boundary wrap rhs: PASS
+Boundary case 0x80 < 0x7f result: 0
+Boundary case 0x80 < 0x7f: PASS
+SignExt output bit 1 means: negative (lhs < rhs)
+SignExt bit 1 means negative: PASS
+
+CSV metrics:
+label,exec_tfhe_us,verify_tfhe_us,prover_us,verifier_us,end_to_end_online_us,register_base_us,register_derived_tfhe_us,register_derived_prover_us,register_derived_verifier_us,compare_tfhe_us,compare_prover_us,compare_verifier_us,exec_subtraction_us,exec_signbit_pbs_us,exec_internal_ks_us,exec_final_cmp_ks_us,verify_subtraction_us,verify_final_cmp_ks_us,accum_init_us,blind_rotate_us,extract_us,proof_size_bytes,ciphertext_size_bytes,metadata_size_bytes,total_online_comm_bytes,server_state_bytes,gate_state_bytes
+register_base_a,0,0,0,0,34,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20296,20297,2592
+register_base_b,0,0,0,0,33,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20296,40594,2592
+register_base_duplicate_handle,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20296,40594,2592
+register_base_bad_signature,0,0,0,0,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20296,40594,2592
+compare_prove,9197256,0,918004,0,10115326,0,0,0,0,9197256,918004,0,9039239,157156,1363,861,0,0,1,155791,1,4532712,25320,16,4537792,40594,2592
+compare_verify,0,934,0,106209,107156,0,0,0,0,934,0,106209,0,0,0,0,0,934,0,0,0,0,0,0,0,40594,2592
+compare_verify_bad_pbs_proof,0,0,0,1,9,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+compare_verify_bad_u,0,973,0,106416,107395,0,0,0,0,973,0,106416,0,0,0,0,0,973,0,0,0,0,0,0,0,0,0
+register_derived_valid,0,0,0,8920647,8920648,0,0,0,8920647,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20280,60891,2592
+register_derived_wrong_output,0,0,0,8804566,8804566,0,0,0,8804566,0,0,0,0,0,0,0,0,0,0,0,0,0,20256,41,20280,60891,2592
+compare_derived_prove,6307752,0,892118,0,7199928,0,0,0,0,6307752,892118,0,6149564,157361,1444,827,0,0,2,155914,1,4532712,25320,16,4537792,81188,2592
+compare_derived_verify,0,1064,0,110201,111281,0,0,0,0,1064,0,110201,0,0,0,0,0,1064,0,0,0,0,0,0,0,81188,2592

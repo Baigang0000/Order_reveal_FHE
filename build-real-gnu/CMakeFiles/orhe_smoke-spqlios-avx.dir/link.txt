@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\orhe_smoke-spqlios-avx.dir/objects.a
+C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\orhe_smoke-spqlios-avx.dir/objects.a @CMakeFiles\orhe_smoke-spqlios-avx.dir\objects1.rsp
+C:\msys64\ucrt64\bin\c++.exe  -std=gnu++11 -g0 -march=native -O2 -DNDEBUG -funroll-loops -Wall -Werror -Wl,--whole-archive CMakeFiles\orhe_smoke-spqlios-avx.dir/objects.a -Wl,--no-whole-archive -o orhe_smoke-spqlios-avx.exe -Wl,--out-implib,liborhe_smoke-spqlios-avx.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\orhe_smoke-spqlios-avx.dir\linkLibs.rsp

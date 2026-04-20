@@ -11,9 +11,10 @@ extern "C" {
 
 typedef struct ORHEMetrics {
     // Runtime metrics (microseconds)
-    uint64_t tfhe_eval_us;              // server-side TFHE computation only
+    uint64_t exec_tfhe_us;              // compare-execution TFHE only
+    uint64_t verify_tfhe_us;            // verifier-side TFHE recomputation only
     uint64_t prover_us;                 // ORHE proof generation time
-    uint64_t verifier_us;               // gate-side proof verification time
+    uint64_t verifier_us;               // proof-checking time only
     uint64_t end_to_end_online_us;      // whole client-visible operation
 
     // More granular decomposition
@@ -21,9 +22,18 @@ typedef struct ORHEMetrics {
     uint64_t register_derived_tfhe_us;
     uint64_t register_derived_prover_us;
     uint64_t register_derived_verifier_us;
-    uint64_t compare_tfhe_us;
+    uint64_t compare_tfhe_us;           // exec_tfhe_us + verify_tfhe_us for compare rows
     uint64_t compare_prover_us;
     uint64_t compare_verifier_us;
+    uint64_t exec_subtraction_us;
+    uint64_t exec_signbit_pbs_us;
+    uint64_t exec_internal_ks_us;
+    uint64_t exec_final_cmp_ks_us;
+    uint64_t verify_subtraction_us;
+    uint64_t verify_final_cmp_ks_us;
+    uint64_t accum_init_us;             // execution-side sign-bit PBS accumulator init
+    uint64_t blind_rotate_us;           // execution-side sign-bit PBS blind rotation
+    uint64_t extract_us;                // execution-side sign-bit PBS extraction
 
     // Communication / storage
     uint64_t proof_size_bytes;
@@ -39,6 +49,7 @@ typedef struct ORHETimer {
 } ORHETimer;
 
 void orhe_metrics_reset(ORHEMetrics* m);
+void orhe_metrics_add(ORHEMetrics* dst, const ORHEMetrics* src);
 
 // timer helpers
 uint64_t orhe_now_us(void);

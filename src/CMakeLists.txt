@@ -11,6 +11,10 @@ set(ENABLE_NAYUKI_AVX ON CACHE BOOL "Enable the Nayuki AVX assembly FFT processo
 set(ENABLE_SPQLIOS_AVX ON CACHE BOOL "Enable the SPQLIOS AVX assembly FFT processor")
 set(ENABLE_SPQLIOS_FMA ON CACHE BOOL "Enable the SPQLIOS FMA assembly FFT processor")
 set(ENABLE_TESTS OFF CACHE BOOL "Build the tests (requires googletest)")
+set(ENABLE_ORHE_SMOKE ON CACHE BOOL "Build the ORHE smoke executable")
+set(ENABLE_ORHE_BENCHMARK ON CACHE BOOL "Build the ORHE threshold benchmark executable")
+set(ENABLE_ORHE_DERIVED_BENCHMARK ON CACHE BOOL "Build the ORHE derived-registration benchmark executable")
+set(ENABLE_ORHE_ATTACK_BENCHMARK ON CACHE BOOL "Build the ORHE attack benchmark executable")
 
 project(tfhe)
 
@@ -73,6 +77,35 @@ install(FILES ${TFHE_HEADERS}
 
 # include the lib and the tests
 add_subdirectory(libtfhe)
+
+if (ENABLE_ORHE_SMOKE)
+foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
+    add_executable(orhe_smoke-${FFT_PROCESSOR} test/orhe_smoke.cpp ${TFHE_HEADERS})
+    target_link_libraries(orhe_smoke-${FFT_PROCESSOR} tfhe-${FFT_PROCESSOR})
+endforeach ()
+endif ()
+
+if (ENABLE_ORHE_BENCHMARK)
+foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
+    add_executable(orhe_bench_threshold-${FFT_PROCESSOR} test/orhe_bench_threshold.cpp ${TFHE_HEADERS})
+    target_link_libraries(orhe_bench_threshold-${FFT_PROCESSOR} tfhe-${FFT_PROCESSOR})
+endforeach ()
+endif ()
+
+if (ENABLE_ORHE_DERIVED_BENCHMARK)
+foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
+    add_executable(orhe_bench_derived_registration-${FFT_PROCESSOR} test/orhe_bench_derived_registration.cpp ${TFHE_HEADERS})
+    target_link_libraries(orhe_bench_derived_registration-${FFT_PROCESSOR} tfhe-${FFT_PROCESSOR})
+endforeach ()
+endif ()
+
+if (ENABLE_ORHE_ATTACK_BENCHMARK)
+foreach (FFT_PROCESSOR IN LISTS FFT_PROCESSORS)
+    add_executable(orhe_bench_attack-${FFT_PROCESSOR} test/orhe_bench_attack.cpp ${TFHE_HEADERS})
+    target_link_libraries(orhe_bench_attack-${FFT_PROCESSOR} tfhe-${FFT_PROCESSOR})
+endforeach ()
+endif ()
+
 if (ENABLE_TESTS)
 enable_testing()
 add_subdirectory(test)

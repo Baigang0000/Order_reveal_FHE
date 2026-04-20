@@ -1,0 +1,4 @@
+backend,submode,bit_width,episodes,exact_recovery_count,unexpected_acceptance_count,blocked_by_rejection_count,exact_recovery_rate,unexpected_acceptance_rate,blocked_by_rejection_rate,mean_queries,mean_latency_us,mean_bytes
+unsafe_compare,released_compare_bits,8,1,1,0,0,1.000000,0.000000,0.000000,8.000000,68729153.000,162056.000
+orhe_attack,fresh_unregistered_threshold,8,1,0,0,1,0.000000,0.000000,1.000000,1.000000,208.000,40552.000
+orhe_attack,registered_threshold_if_supported,8,1,0,0,1,0.000000,0.000000,1.000000,1.000000,214.000,81072.000
