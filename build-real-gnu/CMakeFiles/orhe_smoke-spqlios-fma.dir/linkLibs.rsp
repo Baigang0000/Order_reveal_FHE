@@ -1,1 +1,0 @@
- "libtfhe/libtfhe-spqlios-fma.dll.a" "C:/Users/baiga/OneDrive/Desktop/orhe-benchmarking/src/../rust/orhe-proof-backend/target/x86_64-pc-windows-gnu/release/liborhe_proof_backend.a" -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

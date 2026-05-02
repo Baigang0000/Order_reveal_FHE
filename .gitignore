@@ -2,3 +2,24 @@ callgrind.*
 .*.swp
 *.o
 doc
+
+# Local build outputs.
+build/
+build-local/
+build-local-mingw/
+build-real-gnu/
+build-semantic-mock/
+build-semantic-mock-mingw/
+build-semantic-mock-portable/
+build-semantic-mock-portable-v2/
+
+# Rust/Cargo generated artifacts for the ORHE proof backend.
+.cargo_orhe/
+rust/orhe-proof-backend/target/
+
+# Transient CMake and benchmark byproducts.
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.log
+*.tmp
